@@ -9,7 +9,7 @@ import axios from 'axios'
 
 interface FileUploadProps {
   onDetectionStart: () => void
-  onDetectionComplete: (result: any) => void
+  onDetectionComplete: (result: unknown) => void
   isProcessing: boolean
   mode?: 'all' | 'video-only'
   token?: string | null
@@ -57,7 +57,7 @@ export default function FileUpload({ onDetectionStart, onDetectionComplete, isPr
     }
 
     toast.success('File uploaded successfully!')
-  }, [])
+  }, [mode])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -85,7 +85,7 @@ export default function FileUpload({ onDetectionStart, onDetectionComplete, isPr
         : (uploadedFile.type.startsWith('image/') ? '/detect/image' : '/detect/video')
 
   
-      const headers: any = { 'Content-Type': 'multipart/form-data' }
+      const headers: Record<string, string> = { 'Content-Type': 'multipart/form-data' }
       if (token) {
         headers['Authorization'] = `Bearer ${token}`
       }
@@ -103,12 +103,12 @@ export default function FileUpload({ onDetectionStart, onDetectionComplete, isPr
       ).then((response) => {
         onDetectionComplete(response.data)
 
-      }).catch((error) => {
+      }).catch((error: unknown) => {
         console.error('Upload error:', error)
-        toast.error(error.response?.data?.detail || 'Failed to process file')
+        toast.error((error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Failed to process file')
       })
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Upload error:', error)
       toast.error('Failed to process file')
     }
@@ -133,7 +133,7 @@ export default function FileUpload({ onDetectionStart, onDetectionComplete, isPr
     <div className="space-y-6 mt-10">
       {/* Drop Zone */}
       <motion.div
-        {...(getRootProps() as any)}
+        {...(getRootProps() as Record<string, unknown>)}
         className={`
           relative border-2 border-dashed rounded-3xl p-12 text-center cursor-pointer transition-all duration-300
           ${isDragActive

@@ -218,9 +218,11 @@ def collate_pairs(batch, fe: FeatureExtractor):
     y = torch.stack(y_list, dim=0)    # [B]
     return x1, x2, y
 
-# -----------------------
-# MODELS
-# -----------------------
+
+
+
+
+
 class ECAPAEncoder(nn.Module):
     """ECAPA-TDNN expecting input [B, F, T]."""
     def __init__(self, feat_dim: int):

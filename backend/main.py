@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 
 from models.audio2 import FeatureExtractor,Siamese,CFG,safe_load_audio,AudioEncoder,DeepfakeClassifier,AudioClassifier
 from models.videoaudio import MultiModalTransformer,predictvideo,fpredictvideo,predictvideoonly2
-from models.image import MultiCueDetector,ForensicsTransforms,FaceCropper
+from models.image import MultiCueDetector,XMultiCueDetector,ForensicsTransforms,FaceCropper
 
 from database import get_database, DetectionHistoryModel, AudioReferenceModel, UserCreate, UserLogin ,serialize_doc
 from auth import authenticate_user, create_user, get_current_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -54,9 +54,11 @@ def load_model(model,chk_path,chk,weights_only=True):
     model.eval()
     return model
 
-image_model = load_model(MultiCueDetector(),r"E:\intern_project\CID\DeepfakeDetection\app\backend\checkpoints\imagemodel\best_0.966.pt","model")    
-face_model = load_model(MultiCueDetector(),r"E:\intern_project\CID\DeepfakeDetection\app\backend\checkpoints\face\best_0.9663076629813191.pt","model")
-vamodel = load_model(MultiModalTransformer(),r"E:\intern_project\CID\DeepfakeDetection\app\backend\checkpoints\video\1epoch_10_0.9081407730806091.pth",'model_state_dict',False)
+image_model = load_model(MultiCueDetector(),r"E:\intern_project\CID\DeepfakeDetection\app\Phase-VI-2025\deepfake-detection-tool\backend\checkpoints\imagemodel\best_0.966.pt","model")    
+face_model = load_model(MultiCueDetector(),r"E:\intern_project\CID\DeepfakeDetection\app\Phase-VI-2025\deepfake-detection-tool\backend\checkpoints\face\best_0.9663076629813191.pt","model")
+face_model2 = load_model(XMultiCueDetector(),r"E:\intern_project\CID\DeepfakeDetection\app\Phase-VI-2025\deepfake-detection-tool\backend\checkpoints\face\best_0.9940440738534843.pt","model")
+
+vamodel = load_model(MultiModalTransformer(),r"E:\intern_project\CID\DeepfakeDetection\app\Phase-VI-2025\deepfake-detection-tool\backend\checkpoints\video\1epoch_10_0.9081407730806091.pth",'model_state_dict',False)
 
 fe = FeatureExtractor(
         sr=CFG.sample_rate,
@@ -70,17 +72,17 @@ fe = FeatureExtractor(
 
 feat_dim = CFG.n_mels + CFG.n_lfcc
 
-audio_model = load_model(Siamese(feat_dim),r"E:\intern_project\CID\DeepfakeDetection\app\backend\checkpoints\audio\epoch4_simAUC0.0109.pth",'model_state')
+audio_model = load_model(Siamese(feat_dim),r"E:\intern_project\CID\DeepfakeDetection\app\Phase-VI-2025\deepfake-detection-tool\backend\checkpoints\audio\epoch4_simAUC0.0109.pth",'model_state')
 encoder = AudioEncoder(embed_dim=256)
 encoder.to(CFG.device) 
-audio2_model = load_model(DeepfakeClassifier(encoder=encoder, embed_dim=256, hidden_dim=128),r"E:\intern_project\CID\DeepfakeDetection\app\backend\checkpoints\audio\epoch2_clsAUC0.9995.pth",'model_state')
-single_audio = load_model(AudioClassifier(),r"E:\intern_project\CID\DeepfakeDetection\app\backend\checkpoints\audio\epoch2_clsAUC0.0712.pth",'model_state')
+audio2_model = load_model(DeepfakeClassifier(encoder=encoder, embed_dim=256, hidden_dim=128),r"E:\intern_project\CID\DeepfakeDetection\app\Phase-VI-2025\deepfake-detection-tool\backend\checkpoints\audio\epoch2_clsAUC0.9995.pth",'model_state')
+single_audio = load_model(AudioClassifier(),r"E:\intern_project\CID\DeepfakeDetection\app\Phase-VI-2025\deepfake-detection-tool\backend\checkpoints\audio\epoch2_clsAUC0.0712.pth",'model_state')
 
 
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -201,30 +203,43 @@ def detect_deepfake_image(image_path: str, gradcam_output_path: Optional[str] = 
     confidence,gradcam_output_path = get_gradcam(image_model,imgdetails,device,filename=gradcam_output_path)
     confidence = confidence.item()
     face_detect = True
+
     try :
         face_img = facecrop.crop_largest_face(img)
         imgdetails = transform(face_img)
+
+        face_model2.eval()
+        rgb = imgdetails['rgb'].to(device).unsqueeze(0)
+        noise = imgdetails['noise'].to(device).unsqueeze(0)  
+        freq = imgdetails['freq'].to(device).unsqueeze(0)
+        ela = imgdetails['ela'].to(device).unsqueeze(0)
+        logit,_ = face_model2(rgb,noise,freq,ela)
+        facecon2 = torch.sigmoid(logit)
+
         facecon,grad_face_path = get_gradcam(face_model,imgdetails,device,filename=grad_face_path)
         facecon = facecon.item()
+        print(facecon2,facecon,confidence)
 
     except:
         face_detect = False 
         facecon=None
 
     atr = 0
+    
     if confidence > .5:
         atr+=1
-    if facecon > .5:
-        atr+=1 
 
-    if confidence > .7 or facecon > .7:
-        is_deepfake = 1 
-    else:
-        is_deepfake = 0
 
     if facecon is not None:
+        if facecon > .5:
+            atr+=1 
         confidence = (confidence+facecon)/2
 
+    if confidence > .51 :
+        is_deepfake = 1 
+
+    else:
+        is_deepfake = 0
   
     serializable_details = {
         key: f"data:image/png;base64,{array_to_base64(value)}"
@@ -236,7 +251,7 @@ def detect_deepfake_image(image_path: str, gradcam_output_path: Optional[str] = 
         "confidence": confidence,
         "details": {
             "face_detected": face_detect,
-            "quality_score": 1-facecon,
+            "quality_score": 1-facecon if facecon else confidence,
             "artifacts_found": atr,
             "image_details": serializable_details  # frontend-ready images
         },
@@ -566,7 +581,7 @@ async def detect_video_audio_deepfake(
         filename_no_ext = os.path.splitext(file.filename)[0]
          
         try:
-            pdf_path = generate_video_pdf(file_path,result, 
+            pdf_path = generate_video_pdf(file_path,video_result, 
             out_path=f"/uploads/pdf/{filename_no_ext}_video.pdf",
             )
             print("pdf succesfully generated ")

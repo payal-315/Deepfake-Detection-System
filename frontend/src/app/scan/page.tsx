@@ -8,18 +8,17 @@ import ResultDisplay from '@/components/ResultDisplay'
 import NavBar from '../../components/NavBar'
 import { useAuth } from '../../components/AuthContext'
 import { useRouter } from 'next/navigation'
-import toast from 'react-hot-toast'
-import axios from 'axios'
 
 interface DetectionResult {
   id: string
   filename: string
   file_type: string
+  framegrad: Record<string, unknown>
   is_deepfake: boolean
   confidence: number
   processing_time: number
   timestamp: string
-  details?: any
+  details?: Record<string, unknown>
 }
 
 interface HistoryItem {
@@ -30,7 +29,7 @@ interface HistoryItem {
   confidence: number
   processing_time: number
   timestamp: string
-  details?: any
+  details?: Record<string, unknown>
 }
 
 function Waveform({ file, color = '#7c3aed' }: { file: File, color?: string }) {
@@ -41,6 +40,7 @@ function Waveform({ file, color = '#7c3aed' }: { file: File, color?: string }) {
     const run = async () => {
       try {
         const arrayBuffer = await file.arrayBuffer()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
         const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0))
         const channelData = audioBuffer.getChannelData(0)
@@ -57,7 +57,7 @@ function Waveform({ file, color = '#7c3aed' }: { file: File, color?: string }) {
         }
         if (!isCancelled) setPoints(newPoints)
         audioCtx.close()
-      } catch (e) {
+      } catch {
         if (!isCancelled) setPoints([])
       }
     }
@@ -94,8 +94,10 @@ export default function ScanPage() {
   const [isProcessingMedia, setIsProcessingMedia] = useState(false)
   // Video-Audio tab state
   const [vaResult, setVaResult] = useState<DetectionResult | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [fvaResult, setFVaResult] = useState<DetectionResult | null>(null)
   const [isProcessingVa, setIsProcessingVa] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [fisProcessingVa, setFIsProcessingVa] = useState(false)
   const [refAudio, setRefAudio] = useState<File | null>(null)
   const [testAudio, setTestAudio] = useState<File | null>(null)
@@ -132,11 +134,12 @@ export default function ScanPage() {
     if (user && token) {
       loadHistory()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, token])
 
   // Media handlers
-  const handleMediaDetectionComplete = (data: DetectionResult) => {
-    setMediaResult(data)
+  const handleMediaDetectionComplete = (data: unknown) => {
+    setMediaResult(data as DetectionResult)
     setIsProcessingMedia(false)
     loadHistory()
   }
@@ -147,8 +150,8 @@ export default function ScanPage() {
   }
 
   // Video-Audio handlers
-  const handleVaDetectionComplete = (data: DetectionResult) => {
-    setVaResult(data)
+  const handleVaDetectionComplete = (data: unknown) => {
+    setVaResult(data as DetectionResult)
     setIsProcessingVa(false)
     loadHistory()
   }
@@ -158,12 +161,14 @@ export default function ScanPage() {
     setVaResult(null)
   }
 
-  const fhandleVaDetectionComplete = (data: DetectionResult) => {
-    setFVaResult(data)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const fhandleVaDetectionComplete = (data: unknown) => {
+    setFVaResult(data as DetectionResult)
     setFIsProcessingVa(false)
     loadHistory()
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const fhandleVaDetectionStart = () => {
     setFIsProcessingVa(true)
     setFVaResult(null)
@@ -247,6 +252,7 @@ export default function ScanPage() {
                       onDetectionComplete={handleMediaDetectionComplete}
                       isProcessing={isProcessingMedia}
                       token={token}
+                      facedetect={facedetec}
                     />
                   </motion.div>
 
@@ -342,7 +348,7 @@ export default function ScanPage() {
                           const data = await res.json()
                           setAudioResult({ similarity: data.similarity, verdict: data.verdict, probability: data.probability,pdf_path: data.pdf_path })
                           loadHistory()
-                        } catch (e) {
+                        } catch {
                           setAudioResult(null)
                         } finally {
                           setAudioLoading(false)

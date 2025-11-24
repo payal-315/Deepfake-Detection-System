@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from './AuthContext'
 import { motion } from 'framer-motion'
-import { Shield, Menu, X, User, LogOut, History } from 'lucide-react'
+import { Menu, X, User, LogOut, History } from 'lucide-react'
 
 export default function NavBar() {
   const { user, logout } = useAuth()
@@ -101,7 +101,7 @@ export default function NavBar() {
               {user && (
                 <Link 
                   href="/history" 
-                  className="block text-gray-700 hover:text-red-600 transition-colors font-medium flex items-center space-x-2"
+                  className="text-gray-700 hover:text-red-600 transition-colors font-medium flex items-center space-x-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <History className="h-4 w-4" />

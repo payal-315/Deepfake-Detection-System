@@ -80,7 +80,7 @@ class FaceCropper:
             areas = [(f.bbox[2] - f.bbox[0]) * (f.bbox[3] - f.bbox[1]) for f in faces]
             i = np.argmax(areas)
             x1, y1, x2, y2 = [int(v) for v in faces[i].bbox]
-            return img.crop((x1, y1, x2, y2))
+            return img.crop((x1+10, y1+10, x2+10, y2+10))
 
         return img  # fallback: no face found, return original
 
@@ -173,7 +173,23 @@ class RGBEncoder(nn.Module):
         x = self.backbone(x)
         x = self.proj(x)
         return x
+import timm
+class XRGBEncoder(nn.Module):
+    def __init__(self, out_dim: int = 256):
+        super().__init__()
+        m = timm.create_model("xception", pretrained=True, num_classes=0)  
+        # num_classes=0 → removes classifier, outputs feature vector directly
+        self.backbone = m
+        in_features = m.num_features  # feature dimension of Xception (usually 2048)
+        
+        self.proj = nn.Linear(in_features, out_dim)
 
+    def forward(self, x):
+        x = self.backbone(x)
+        x = self.proj(x)
+        return x
+
+        
 class FusionTransformer(nn.Module):
     def __init__(self, emb_dim: int = 256, n_tokens: int = 4, n_heads: int = 4, depth: int = 2):
         super().__init__()
@@ -212,4 +228,21 @@ class MultiCueDetector(nn.Module):
         }
 
 
+class XMultiCueDetector(nn.Module):
+    def __init__(self, emb_dim: int = 256):
+        super().__init__()
+        self.rgb_enc = XRGBEncoder(out_dim=emb_dim)
+        self.noise_enc = BranchEncoder(in_ch=3, out_dim=emb_dim)
+        self.freq_enc = BranchEncoder(in_ch=1, out_dim=emb_dim)
+        self.ela_enc = BranchEncoder(in_ch=1, out_dim=emb_dim)
+        self.fusion = FusionTransformer(emb_dim=emb_dim, n_tokens=4)
 
+    def forward(self, rgb, noise, freq, ela):
+        f_rgb = self.rgb_enc(rgb)
+        f_noise = self.noise_enc(noise)
+        f_freq = self.freq_enc(freq)
+        f_ela = self.ela_enc(ela)
+        logit = self.fusion([f_rgb, f_noise, f_freq, f_ela])
+        return logit, {
+            'rgb': f_rgb, 'noise': f_noise, 'freq': f_freq, 'ela': f_ela
+        }

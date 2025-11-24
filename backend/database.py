@@ -7,7 +7,7 @@ from bson import ObjectId
 import os
 
 # MongoDB connection
-MONGODB_URL = os.getenv("MONGODB_URL", "mongodb+srv://ccitr:deepfakedetection@dfcluster.mtobhjj.mongodb.net/")
+MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://127.0.0.1:27017/?directConnection=true")
 DATABASE_NAME = "deepfake_detection"
 
 def serialize_doc(doc):

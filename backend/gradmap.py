@@ -62,11 +62,11 @@ def get_gradcam(model, batch, device, filename="gradcam.png" , save_dir="uploads
     freq = batch['freq'].to(device).unsqueeze(0)
     ela = batch['ela'].to(device).unsqueeze(0)
   
-    # Choose last conv layer of ResNet18
-    target_layer = model.rgb_enc.backbone.layer4[-1]
-
+    target_layer =  model.rgb_enc.backbone.layer4[-1]
     gradcam = GradCAM(model, target_layer)
+
     confidence,cam = gradcam.generate(rgb, noise, freq, ela)  # [1,H,W]
+    print(confidence)
     cam = cam.squeeze().cpu().numpy()
 
     img = rgb.squeeze().permute(1, 2, 0).cpu().numpy()
@@ -107,7 +107,6 @@ def visualize_gradcam(model, batch, device):
     img = rgb.squeeze().permute(1, 2, 0).cpu().numpy()
     img = (img - img.min()) / (img.max() - img.min())
 
-    # 🔥 Resize CAM to image resolution
     cam = cv2.resize(cam, (img.shape[1], img.shape[0]))
 
     # Create heatmap

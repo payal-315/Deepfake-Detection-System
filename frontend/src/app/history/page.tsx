@@ -15,7 +15,7 @@ interface HistoryItem {
   confidence: number
   processing_time: number
   timestamp: string
-  details?: any
+  details?: Record<string, unknown>
 }
 
 interface AudioReferenceItem {
@@ -45,6 +45,7 @@ export default function HistoryPage() {
     if (user && token) {
       loadHistory()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, token])
 
   const loadHistory = async () => {

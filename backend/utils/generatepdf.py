@@ -57,15 +57,15 @@ def generate_image_pdf(filepath: str, result: dict, out_path: str = "uploads/pdf
     Generate a forensic PDF from an HTML template using pdfkit + wkhtmltopdf.
     """
     # Jinja2 setup
-    abs_out_path = f"E:/intern_project/CID/DeepfakeDetection/app/backend/{out_path}"
+    abs_out_path = f"E:/intern_project/CID/DeepfakeDetection/app/Phase-VI-2025/deepfake-detection-tool/backend/{out_path}"
 
     env = Environment(loader=FileSystemLoader("templates"))
     template = env.get_template("image_report.html")
     image_abs_path = os.path.abspath(filepath)
     if grad_full:
-        grad_full = f"E:/intern_project/CID/DeepfakeDetection/app/backend/{grad_full}"
+        grad_full = f"E:/intern_project/CID/DeepfakeDetection/app/Phase-VI-2025/deepfake-detection-tool/backend/{grad_full}"
     if grad_face:
-        grad_face = f"E:/intern_project/CID/DeepfakeDetection/app/backend/{grad_face}"   
+        grad_face = f"E:/intern_project/CID/DeepfakeDetection/app/Phase-VI-2025/deepfake-detection-tool/backend/{grad_face}"   
 
     file_stat = os.stat(image_abs_path)
     
@@ -130,12 +130,12 @@ def generate_waveform(audio_path, out_path):
     return out_path
 
 def generate_audio_pdf(file_id,reference_path, test_path, result: dict, out_path="uploads/pdf/audio_report.pdf"):
-    abs_out_path = f"E:/intern_project/CID/DeepfakeDetection/app/backend/{out_path}"
+    abs_out_path = f"E:/intern_project/CID/DeepfakeDetection/app/Phase-VI-2025/deepfake-detection-tool/backend/{out_path}"
     
     # Generate waveform images
 
-    ref_waveform = generate_waveform(reference_path, f"E:/intern_project/CID/DeepfakeDetection/app/backend/uploads/waveforms/{file_id}_reference.png")
-    test_waveform = generate_waveform(test_path, f"E:/intern_project/CID/DeepfakeDetection/app/backend/uploads/waveforms/{file_id}_test.png")
+    ref_waveform = generate_waveform(reference_path, f"E:/intern_project/CID/DeepfakeDetection/app/Phase-VI-2025/deepfake-detection-tool/backend/uploads/waveforms/{file_id}_reference.png")
+    test_waveform = generate_waveform(test_path, f"E:/intern_project/CID/DeepfakeDetection/app/Phase-VI-2025/deepfake-detection-tool/backend/uploads/waveforms/{file_id}_test.png")
 
     # Jinja2 setup
     env = Environment(loader=FileSystemLoader("templates"))
@@ -171,14 +171,14 @@ def generate_video_pdf(filepath: str, result: dict, out_path: str = "uploads/pdf
     """
     Generate a forensic PDF for video analysis.
     """
-    abs_out_path = f"E:/intern_project/CID/DeepfakeDetection/app/backend/{out_path}"
+    abs_out_path = f"E:/intern_project/CID/DeepfakeDetection/app/Phase-VI-2025/deepfake-detection-tool/backend/{out_path}"
     env = Environment(loader=FileSystemLoader("templates"))
     template = env.get_template("video_report.html")
 
     # Generate per-frame score graph
     per_frame_scores = result["details"].get("per_frame_scores", [])
     graph_path = f"uploads/graphs/{result['id']}_perframe.png"
-    abs_graph_path = f"E:/intern_project/CID/DeepfakeDetection/app/backend/{graph_path}"
+    abs_graph_path = f"E:/intern_project/CID/DeepfakeDetection/app/Phase-VI-2025/deepfake-detection-tool/backend/{graph_path}"
 
     if per_frame_scores:
         fps = result["details"].get("fps", 25)
@@ -212,7 +212,7 @@ def generate_video_pdf(filepath: str, result: dict, out_path: str = "uploads/pdf
     # Use first frame as thumbnail (placeholder if you don’t extract)
     thumbnail_path = extract_thumbnail(filepath,f"uploads/thumbnail/{result['id']}.png") # TODO: replace with real extraction
 
-    abs_thumbnail_path = f"E:/intern_project/CID/DeepfakeDetection/app/backend/{thumbnail_path}"
+    abs_thumbnail_path = f"E:/intern_project/CID/DeepfakeDetection/app/Phase-VI-2025/deepfake-detection-tool/backend/{thumbnail_path}"
 
     # Context data
     context = {

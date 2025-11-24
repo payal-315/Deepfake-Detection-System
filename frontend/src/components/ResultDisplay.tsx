@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, XCircle, AlertTriangle, Clock, Gauge, Brain, Eye, Zap } from 'lucide-react'
+import { CheckCircle, XCircle, AlertTriangle, Clock, Gauge, Brain, Eye } from 'lucide-react'
 import { useRef, useEffect, useState } from "react"
 
 interface ResultDisplayProps {
@@ -9,14 +9,60 @@ interface ResultDisplayProps {
     id: string
     filename: string
     file_type: string
-    framegrad: any,
+    framegrad: Record<string, unknown>
     is_deepfake: boolean
     confidence: number
     processing_time: number
     timestamp: string
-    details?: any
+    details?: Record<string, unknown>
   } | null
   isProcessing: boolean
+}
+
+interface VideoPlayerWithHeatProps {
+  videoUrl: string
+  perFrame: number[]
+  videoDurationSeconds: number | undefined
+  API_BASE: string
+}
+
+function VideoPlayerWithHeat({ videoUrl, perFrame, videoDurationSeconds, API_BASE }: VideoPlayerWithHeatProps) {
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const [bgColor, setBgColor] = useState("bg-green-200")
+
+  useEffect(() => {
+    const videoEl = videoRef.current
+    if (!videoEl || !videoDurationSeconds) return
+
+    const handleTimeUpdate = () => {
+      const currentTime = videoEl.currentTime
+      const frameIndex = Math.min(
+        Math.floor((currentTime / videoDurationSeconds) * perFrame.length),
+        perFrame.length - 1
+      )
+      const conf = perFrame[frameIndex]
+
+      if (conf > 0.8) setBgColor("bg-red-600")
+      else if (conf > 0.7) setBgColor("bg-red-600/60")
+      else if (conf > 0.5) setBgColor("bg-red-600/70")
+      else if (conf > 0.3) setBgColor("bg-yellow-200")
+      else setBgColor("bg-green-300")
+    }
+
+    videoEl.addEventListener("timeupdate", handleTimeUpdate)
+    return () => videoEl.removeEventListener("timeupdate", handleTimeUpdate)
+  }, [perFrame, videoDurationSeconds])
+
+  return (
+    <div className={`rounded-xl p-4 transition-colors duration-500 ${bgColor}`}>
+      <video
+        ref={videoRef}
+        src={videoUrl.startsWith("http") ? videoUrl : `${API_BASE}/${videoUrl}`}
+        controls
+        className="w-full h-[50vh] rounded-lg"
+      />
+    </div>
+  )
 }
 
 export default function ResultDisplay({ result, isProcessing }: ResultDisplayProps) {
@@ -87,8 +133,8 @@ export default function ResultDisplay({ result, isProcessing }: ResultDisplayPro
   const isMediumConfidence = result.confidence > 0.6 && result.confidence <= 0.8
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
-  const gradcamPath: string | undefined = result.details?.gradcam_url
-  const gradcamface: string | undefined = result.details?.facegrad
+  const gradcamPath: string | undefined = typeof result.details?.gradcam_url === 'string' ? result.details.gradcam_url : undefined
+  const gradcamface: string | undefined = typeof result.details?.facegrad === 'string' ? result.details.facegrad : undefined
 
   const gradcamUrl = gradcamPath
     ? (gradcamPath.startsWith('http') ? gradcamPath : `${API_BASE}${gradcamPath}`)
@@ -466,7 +512,7 @@ export default function ResultDisplay({ result, isProcessing }: ResultDisplayPro
           </motion.div>
         )}
 
-        {result.file_type === "video" && perFrame && perFrame.length > 1 && result.details?.video_url && (
+        {result.file_type === "video" && perFrame && perFrame.length > 1 && typeof result.details?.video_url === 'string' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -478,44 +524,12 @@ export default function ResultDisplay({ result, isProcessing }: ResultDisplayPro
               Video Playback with Confidence Heat Background
             </h4>
 
-            {(() => {
-              const videoRef = useRef<HTMLVideoElement | null>(null)
-              const [bgColor, setBgColor] = useState("bg-green-200")
-
-              useEffect(() => {
-                const videoEl = videoRef.current
-                if (!videoEl || !videoDurationSeconds) return
-
-                const handleTimeUpdate = () => {
-                  const currentTime = videoEl.currentTime
-                  const frameIndex = Math.min(
-                    Math.floor((currentTime / videoDurationSeconds) * perFrame.length),
-                    perFrame.length - 1
-                  )
-                  const conf = perFrame[frameIndex]
-
-                  if (conf > 0.8) setBgColor("bg-red-600")
-                  else if (conf > 0.7) setBgColor("bg-red-600/60")
-                  else if (conf > 0.5) setBgColor("bg-red-600/70")
-                  else if (conf > 0.3) setBgColor("bg-yellow-200")
-                  else setBgColor("bg-green-300")
-                }
-
-                videoEl.addEventListener("timeupdate", handleTimeUpdate)
-                return () => videoEl.removeEventListener("timeupdate", handleTimeUpdate)
-              }, [perFrame, videoDurationSeconds])
-
-              return (
-                <div className={`rounded-xl p-4 transition-colors duration-500 ${bgColor}`}>
-                  <video
-                    ref={videoRef}
-                    src={result.details.video_url.startsWith("http") ? result.details.video_url : `${API_BASE}/${result.details.video_url}`}
-                    controls
-                    className="w-full h-[50vh] rounded-lg"
-                  />
-                </div>
-              )
-            })()}
+            <VideoPlayerWithHeat
+              videoUrl={typeof result.details.video_url === 'string' ? result.details.video_url : ''}
+              perFrame={perFrame}
+              videoDurationSeconds={videoDurationSeconds}
+              API_BASE={API_BASE}
+            />
           </motion.div>
         )}
         {/* Additional Details */}
@@ -693,7 +707,7 @@ export default function ResultDisplay({ result, isProcessing }: ResultDisplayPro
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-gray-600 mt-2">Heatmap highlighting regions most influential to the model's prediction.</p>
+                <p className="text-xs text-gray-600 mt-2">Heatmap highlighting regions most influential to the model&apos;s prediction.</p>
               </div>
             )}
           </motion.div>

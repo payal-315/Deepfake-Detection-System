@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { useAuth } from './AuthContext'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, User, Lock, Mail } from 'lucide-react'
+import { Eye, EyeOff, User, Lock } from 'lucide-react'
 
 interface LoginFormProps {
   onToggleMode: () => void
@@ -124,7 +124,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
 
         <div className="mt-6 text-center">
           <p className="text-gray-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <button
               onClick={onToggleMode}
               className="text-red-600 hover:text-red-700 font-semibold transition-colors"
