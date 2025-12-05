@@ -18,7 +18,6 @@ try:
 except Exception:
     HAS_SPEECHBRAIN = False
 
-from sklearn import metrics
 import torchaudio.transforms as T
 
 from pydub import AudioSegment

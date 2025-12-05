@@ -25,6 +25,7 @@ export default function NavBar() {
           </Link>
 
           {/* Desktop Navigation */}
+           
           <div className="hidden md:flex items-center space-x-8">
             <Link 
               href="/scan" 
@@ -33,7 +34,7 @@ export default function NavBar() {
               Scan
             </Link>
             
-            {user && (
+            {/* {user && (
               <Link 
                 href="/history" 
                 className="text-gray-700 hover:text-red-600 transition-colors font-medium flex items-center space-x-1"
@@ -41,8 +42,8 @@ export default function NavBar() {
                 <History className="h-4 w-4" />
                 <span>History</span>
               </Link>
-            )}
-             {user ? (
+            )} */}
+             {/* {user ? (
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2 text-gray-700">
                   <User className="h-4 w-4" />
@@ -65,10 +66,10 @@ export default function NavBar() {
               >
                 Sign In
               </Link>
-            )}
+            )} */}
           </div>
 
-          
+           
 
           {/* Mobile menu button */}
           <div className="md:hidden">

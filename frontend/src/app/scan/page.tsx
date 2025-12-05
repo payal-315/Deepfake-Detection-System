@@ -104,7 +104,7 @@ export default function ScanPage() {
   const [audioResult, setAudioResult] = useState<{ similarity: number, verdict: string, probability: number,pdf_path : string } | null>(null)
   const [activeTab, setActiveTab] = useState<'media' | 'audio' | 'video-audio'>('media')
   const [history, setHistory] = useState<HistoryItem[]>([])
-  const [showHistory, setShowHistory] = useState(true)
+  const [showHistory, setShowHistory] = useState(false)
   const [audioloading, setAudioLoading] = useState(false);
   const [facedetec, setFacedetec] = useState(false);
 
@@ -220,12 +220,12 @@ export default function ScanPage() {
                 Video Audio
               </button>
             </div>
-            <button
+            {/* <button
               onClick={() => setShowHistory(!showHistory)}
               className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 text-sm"
             >
               {showHistory ? 'Hide History' : 'Show History'}
-            </button>
+            </button> */}
           </div>
           <div className={`grid ${showHistory ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'} gap-8 items-start`}>
             <div className={`${showHistory ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
@@ -620,7 +620,7 @@ export default function ScanPage() {
             </div>
 
             {/* Sidebar History */}
-            {showHistory && (
+            {/* {showHistory && (
               <aside className="lg:col-span-1 ">
                 <div className="sticky top-24">
                   <div className="bg-white rounded-2xl border border-gray-200 p-5">
@@ -652,7 +652,7 @@ export default function ScanPage() {
                   </div>
                 </div>
               </aside>
-            )}
+            )} */}
           </div>
         </div>
       </div>

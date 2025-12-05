@@ -353,19 +353,20 @@ async def detect_image_deepfake(
             print("\n\npdf generation error ",e)
         # Create detection result
 
-        db = await get_database()
-        history_entry = DetectionHistoryModel(
-            user_id=current_user.id,
-            filename= file.filename or "unknown.jpg",
-            file_type="image",
-            is_deepfake=detection_result.is_deepfake,
-            confidence=detection_result.confidence,
-            processing_time=detection_result.processing_time,
-            timestamp=detection_result.timestamp,
-            details=detection_result.details,
-            file_path=file_path
-        )
-        await db.detection_history.insert_one(history_entry.dict(by_alias=True))
+        
+        # db = await get_database()
+        # history_entry = DetectionHistoryModel(
+        #     user_id=current_user.id,
+        #     filename= file.filename or "unknown.jpg",
+        #     file_type="image",
+        #     is_deepfake=detection_result.is_deepfake,
+        #     confidence=detection_result.confidence,
+        #     processing_time=detection_result.processing_time,
+        #     timestamp=detection_result.timestamp,
+        #     details=detection_result.details,
+        #     file_path=file_path
+        # )
+        # await db.detection_history.insert_one(history_entry.dict(by_alias=True))
         return detection_result
         
     except Exception as e:
@@ -429,20 +430,20 @@ async def detect_video_deepfake(
         except Exception as e:
             print("\n\npdf generation error ",e)
 
-        # Store in MongoDB
-        db = await get_database()
-        history_entry = DetectionHistoryModel(
-            user_id=current_user.id,
-            filename=file.filename or "unknown.mp4",
-            file_type="video",
-            is_deepfake=detection_result.is_deepfake,
-            confidence=detection_result.confidence,
-            processing_time=detection_result.processing_time,
-            timestamp=detection_result.timestamp,
-            details=detection_result.details,
-            file_path=file_path
-        )
-        await db.detection_history.insert_one(history_entry.model_dump(by_alias=True))
+        # # Store in MongoDB
+        # db = await get_database()
+        # history_entry = DetectionHistoryModel(
+        #     user_id=current_user.id,
+        #     filename=file.filename or "unknown.mp4",
+        #     file_type="video",
+        #     is_deepfake=detection_result.is_deepfake,
+        #     confidence=detection_result.confidence,
+        #     processing_time=detection_result.processing_time,
+        #     timestamp=detection_result.timestamp,
+        #     details=detection_result.details,
+        #     file_path=file_path
+        # )
+        # await db.detection_history.insert_one(history_entry.model_dump(by_alias=True))
         
         return detection_result
         
@@ -614,19 +615,19 @@ async def detect_video_audio_deepfake(
             print("\n\npdf generation error ",e)
 
         # Store in MongoDB
-        db = await get_database()
-        history_entry = DetectionHistoryModel(
-            user_id=current_user.id,
-            filename=file.filename or "unknown.mp4",
-            file_type="video",
-            is_deepfake=detection_result.is_deepfake,
-            confidence=detection_result.confidence,
-            processing_time=detection_result.processing_time,
-            timestamp=detection_result.timestamp,
-            details=detection_result.details,
-            file_path=file_path
-        )
-        await db.detection_history.insert_one(history_entry.dict(by_alias=True))
+        # db = await get_database()
+        # history_entry = DetectionHistoryModel(
+        #     user_id=current_user.id,
+        #     filename=file.filename or "unknown.mp4",
+        #     file_type="video",
+        #     is_deepfake=detection_result.is_deepfake,
+        #     confidence=detection_result.confidence,
+        #     processing_time=detection_result.processing_time,
+        #     timestamp=detection_result.timestamp,
+        #     details=detection_result.details,
+        #     file_path=file_path
+        # )
+        # await db.detection_history.insert_one(history_entry.dict(by_alias=True))
 
         return detection_result
     except Exception as e:
@@ -715,20 +716,20 @@ async def detect_audio_reference(
             except Exception as e:
                 print("failed : ",e)    
             # Save in DB
-            db = await get_database()
-            history_entry = AudioReferenceModel(
-                user_id=current_user.id,
-                reference_filename=reference_audio.filename or "reference.wav",
-                test_filename=test_audio.filename or "test.wav",
-                similarity=similarity,
-                verdict=verdict,
-                timestamp=datetime.now(),
-                reference_path=ref_path,
-                test_path=test_path
-            )
+            # db = await get_database()
+            # history_entry = AudioReferenceModel(
+            #     user_id=current_user.id,
+            #     reference_filename=reference_audio.filename or "reference.wav",
+            #     test_filename=test_audio.filename or "test.wav",
+            #     similarity=similarity,
+            #     verdict=verdict,
+            #     timestamp=datetime.now(),
+            #     reference_path=ref_path,
+            #     test_path=test_path
+            # )
 
 
-            await db.audio_references.insert_one(history_entry.dict(by_alias=True))
+            # await db.audio_references.insert_one(history_entry.dict(by_alias=True))
 
             return result
 
@@ -757,16 +758,16 @@ async def detect_audio_reference(
 
 
             # Save in DB
-            db = await get_database()
-            history_entry = {
-                "user_id": current_user.id,
-                "test_filename": test_audio.filename or "test.wav",
-                "probability": deeppred,
-                "verdict": verdict,
-                "timestamp": datetime.now(),
-                "test_path": test_path,
-            }
-            await db.audio_references.insert_one(history_entry)
+            # db = await get_database()
+            # history_entry = {
+            #     "user_id": current_user.id,
+            #     "test_filename": test_audio.filename or "test.wav",
+            #     "probability": deeppred,
+            #     "verdict": verdict,
+            #     "timestamp": datetime.now(),
+            #     "test_path": test_path,
+            # }
+            # await db.audio_references.insert_one(history_entry)
 
             return result.dict()
         except Exception as e:
@@ -776,29 +777,35 @@ async def detect_audio_reference(
 
 @app.get("/history")
 async def get_detection_history(current_user = Depends(get_current_user)):
-    db = await get_database()
+    # db = await get_database()
 
-    # Get user's detection history
-    cursor = db.detection_history.find({"user_id": current_user.id}).sort("timestamp", -1).limit(20)
-    detections = await cursor.to_list(length=20)
+    # # Get user's detection history
+    # cursor = db.detection_history.find({"user_id": current_user.id}).sort("timestamp", -1).limit(20)
+    # detections = await cursor.to_list(length=20)
 
-    # Get user's audio reference history
-    audio_cursor = db.audio_references.find({"user_id": current_user.id}).sort("timestamp", -1).limit(10)
+    # # Get user's audio reference history
+    # audio_cursor = db.audio_references.find({"user_id": current_user.id}).sort("timestamp", -1).limit(10)
 
-    audio_references = await audio_cursor.to_list(length=10)
+    # audio_references = await audio_cursor.to_list(length=10)
 
-    total_detections = await db.detection_history.count_documents({"user_id": current_user.id})
-    total_audio_references = await db.audio_references.count_documents({"user_id": current_user.id})
+    # total_detections = await db.detection_history.count_documents({"user_id": current_user.id})
+    # total_audio_references = await db.audio_references.count_documents({"user_id": current_user.id})
 
-    detections = [serialize_doc(d) for d in detections]
-    audio_references = [serialize_doc(a) for a in audio_references]
-    print("ok")
+    # detections = [serialize_doc(d) for d in detections]
+    # audio_references = [serialize_doc(a) for a in audio_references]
+    # print("ok")
 
+    # return {
+    #     "total_detections": total_detections,
+    #     "total_audio_references": total_audio_references,
+    #     "detections": detections,
+    #     "audio_references": audio_references
+    # } 
     return {
-        "total_detections": total_detections,
-        "total_audio_references": total_audio_references,
-        "detections": detections,
-        "audio_references": audio_references
+        "total_detections": 0,
+        "total_audio_references": 0,
+        "detections": [],
+        "audio_references": []
     }
 
 
@@ -898,19 +905,19 @@ async def fdetect_video_audio_deepfake(
         )
 
         # Store in MongoDB
-        db = await get_database()
-        history_entry = DetectionHistoryModel(
-            user_id=current_user.id,
-            filename=file.filename or "unknown.mp4",
-            file_type="video",
-            is_deepfake=detection_result.is_deepfake,
-            confidence=detection_result.confidence,
-            processing_time=detection_result.processing_time,
-            timestamp=detection_result.timestamp,
-            details=detection_result.details,
-            file_path=file_path
-        )
-        await db.detection_history.insert_one(history_entry.dict(by_alias=True))
+        # db = await get_database()
+        # history_entry = DetectionHistoryModel(
+        #     user_id=current_user.id,
+        #     filename=file.filename or "unknown.mp4",
+        #     file_type="video",
+        #     is_deepfake=detection_result.is_deepfake,
+        #     confidence=detection_result.confidence,
+        #     processing_time=detection_result.processing_time,
+        #     timestamp=detection_result.timestamp,
+        #     details=detection_result.details,
+        #     file_path=file_path
+        # )
+        # await db.detection_history.insert_one(history_entry.dict(by_alias=True))
 
         return detection_result
     except Exception as e:

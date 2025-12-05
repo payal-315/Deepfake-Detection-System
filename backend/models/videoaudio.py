@@ -2,7 +2,6 @@ import os
 import glob
 import cv2
 import numpy as np
-from tqdm import tqdm
 
 import torch
 import torch.nn as nn
