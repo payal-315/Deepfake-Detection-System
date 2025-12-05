@@ -377,8 +377,4 @@ For support and questions:
 - MongoDB for the flexible database solution
 - Next.js for the powerful React framework
 - The open-source community for various dependencies
-#   C c i t r _ d e e p f a k e D t e c t i o n 
- 
- #   d e e p f a k e - d e t e c t i o n - c c i t r 
- 
- 
+#
