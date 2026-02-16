@@ -1,16 +1,13 @@
 *.pth filter=lfs diff=lfs merge=lfs -text
 *.pt filter=lfs diff=lfs merge=lfs -text
-
 # Virtual environments
 venv/
 backend/venv/
 */venv/
-
 # Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
 # Node modules
 frontend/node_modules/
